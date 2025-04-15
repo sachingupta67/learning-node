@@ -1,20 +1,18 @@
 
 const express = require("express");
 const app = express();
-// app.use((req,res)=>{
-//     res.send("Hello World")
-// })
-// app.use('/',(req,res)=>{
-//     res.send("Hello World from root")
-// })
-app.use('/hello',(req,res)=>{
-    res.send("Hello World from hello")
+
+app.get("/user",(req,res)=>{
+    res.send({
+        name:"Amit",
+        age:22
+    });
 })
 
-app.use('/test',(req,res)=>{
-    res.send("Hello World from test")
+app.post("/user",(req,res)=>{
+   console.log("Save data")
+   res.send("Data successfully saved")
 })
-
 app.listen(8080,()=>{
     console.log("Server Running at Port : 8080......");
 })
