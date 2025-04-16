@@ -27,10 +27,36 @@ app.get("/user", async (req, res) => {
     }
     res.status(200).send(users); // sending the user object as response to the ap
   } catch (err) {
-    console.log("err:::", err);
     res.status(400).send({ message: "Something went wrong" });
   }
 });
+
+app.delete('/user', async (req, res) => {
+    try {
+      const uuid = req.body.uuid
+      const users = await User.findByIdAndDelete(uuid);
+      if (!users || users.length===0) {
+        return res.status(404).send({ message: "User not found" });
+      }
+      res.status(200).send({ message: "User Deleted" }); // sending the user object as response to the ap
+    } catch (err) {
+      res.status(400).send({ message: "Something went wrong" });
+    }
+})
+
+// update user by uuid
+app.patch('/user',async(req,res)=>{
+  const data = req.body;
+  try{
+   const userData = await User.findByIdAndUpdate(data._id,{...data},{timestamps:true,returnDocument:'after'});
+   if(!userData){
+    return res.status(404).send({message:"User not found"})
+   }
+   res.status(200).send({message:"User Updated",data:userData})
+  }catch(err){
+    res.status(400).send({message:"Something went wrong"})
+  }
+})
 
 // feed api [GET]- all users from the DB
 app.get("/feed", async (req, res) => {
@@ -41,13 +67,11 @@ app.get("/feed", async (req, res) => {
       }
       res.status(200).send(users); // sending the user object as response to the ap
     } catch (err) {
-      console.log("err:::", err);
       res.status(400).send({ message: "Something went wrong" });
     }
   });
 
 app.use("/", (err, req, res, next) => {
-  console.log("error:::", err);
   res.status(500).send({ message: "Internal Server Error" });
 });
 
