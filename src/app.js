@@ -4,6 +4,7 @@ const { adminAuthMiddleware } = require("./middlewares/auth");
 const app = express();
 app.use('/admin', adminAuthMiddleware)
 app.get('/admin/getData',(req,res)=>{
+    console.log(x)
     res.send("admin data all")
 })
 
@@ -18,6 +19,13 @@ app.use("/users",(req,res,next)=>{
 },(req,res)=>{
     console.log("second middleware");
     res.send("second middleware") 
+})
+
+app.use("/",(err,_req,res,_next)=>{
+    if(err){
+        console.log("check:::",err);
+        res.status(500).send("Internal Server Error");
+    }
 })
 app.listen(8080,()=>{
     console.log("Server Running at Port : 8080......");
