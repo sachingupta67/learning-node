@@ -13,16 +13,17 @@ app.post("/signup", async (req, res) => {
     await user.save();
     res.send({ message: "User Created" });
   } catch (err) {
-    return res.status(400).send({ message: "Internal Server Error" });
+    res.status(500).send(err);
+
   }
 });
 
 // Get user by email
 app.get("/user", async (req, res) => {
   try {
-    const emailId = req.body.emailId
+    const emailId = req.body.emailId;
     const users = await User.find({ emailId: emailId });
-    if (!users || users.length===0) {
+    if (!users || users.length === 0) {
       return res.status(404).send({ message: "User not found" });
     }
     res.status(200).send(users); // sending the user object as response to the ap
@@ -31,48 +32,52 @@ app.get("/user", async (req, res) => {
   }
 });
 
-app.delete('/user', async (req, res) => {
-    try {
-      const uuid = req.body.uuid
-      const users = await User.findByIdAndDelete(uuid);
-      if (!users || users.length===0) {
-        return res.status(404).send({ message: "User not found" });
-      }
-      res.status(200).send({ message: "User Deleted" }); // sending the user object as response to the ap
-    } catch (err) {
-      res.status(400).send({ message: "Something went wrong" });
+app.delete("/user", async (req, res) => {
+  try {
+    const uuid = req.body.uuid;
+    const users = await User.findByIdAndDelete(uuid);
+    if (!users || users.length === 0) {
+      return res.status(404).send({ message: "User not found" });
     }
-})
+    res.status(200).send({ message: "User Deleted" }); // sending the user object as response to the ap
+  } catch (err) {
+    res.status(400).send({ message: "Something went wrong" });
+  }
+});
 
 // update user by uuid
-app.patch('/user',async(req,res)=>{
+app.patch("/user", async (req, res) => {
   const data = req.body;
-  try{
-   const userData = await User.findByIdAndUpdate(data._id,{...data},{timestamps:true,returnDocument:'after'});
-   if(!userData){
-    return res.status(404).send({message:"User not found"})
-   }
-   res.status(200).send({message:"User Updated",data:userData})
-  }catch(err){
-    res.status(400).send({message:"Something went wrong"})
+  try {
+    const userData = await User.findByIdAndUpdate(
+      data._id,
+      { ...data },
+      { timestamps: true, returnDocument: "after",runValidators:true }
+    );
+    if (!userData) {
+      return res.status(404).send({ message: "User not found" });
+    }
+    res.status(200).send({ message: "User Updated", data: userData });
+  } catch (err) {
+    res.status(400).send({ message: err.message });
   }
-})
+});
 
 // feed api [GET]- all users from the DB
 app.get("/feed", async (req, res) => {
-    try {
-      const users = await User.find({}); // with {} => all users from the collection will get
-      if (!users || users.length===0) {
-        return res.status(404).send({ message: "User not found" });
-      }
-      res.status(200).send(users); // sending the user object as response to the ap
-    } catch (err) {
-      res.status(400).send({ message: "Something went wrong" });
+  try {
+    const users = await User.find({}); // with {} => all users from the collection will get
+    if (!users || users.length === 0) {
+      return res.status(404).send({ message: "User not found" });
     }
-  });
+    res.status(200).send(users); // sending the user object as response to the ap
+  } catch (err) {
+    res.status(400).send({ message: "Something went wrong" });
+  }
+});
 
 app.use("/", (err, req, res, next) => {
-  res.status(500).send({ message: "Internal Server Error" });
+  res.status(500).send({ message: err.message });
 });
 
 connectDB()
