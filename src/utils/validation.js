@@ -3,11 +3,11 @@ const validateSignupData = (req) => {
   const { firstName, lastName, emailId, password } = req.body;
   if (!firstName || !lastName) {
     throw new Error("First Name and Last Name are required");
-  }
-  else if (firstName.length < 3 || lastName.length < 3) {
-    throw new Error("First Name and Last Name must be at least 3 characters long");
-  }
-  else if (firstName.length > 20 || lastName.length > 20) {
+  } else if (firstName.length < 3 || lastName.length < 3) {
+    throw new Error(
+      "First Name and Last Name must be at least 3 characters long"
+    );
+  } else if (firstName.length > 20 || lastName.length > 20) {
     throw new Error("First Name and Last Name must be less than 20 characters");
   } else if (!emailId || !password) {
     throw new Error("EmailId and Password are required");
@@ -18,6 +18,25 @@ const validateSignupData = (req) => {
   }
 };
 
+const validateEditProfileData = (req) => {
+  const allowedEditFields = [
+    "firstName",
+    "lastName",
+    "gender",
+    "age",
+    "about",
+    "photoUrl",
+    "about",
+    "skills",
+  ];
+
+  const isEditAllowed = Object.keys(req.body).every((key) =>
+    allowedEditFields.includes(key)
+  );
+  return isEditAllowed;
+};
+
 module.exports = {
   validateSignupData,
+  validateEditProfileData,
 };
