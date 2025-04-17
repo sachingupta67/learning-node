@@ -22,13 +22,13 @@ app.post("/login", async (req, res) => {
     if (!user) {
       throw new Error("Credentials are not valid");
     }
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await user.validatePassword(password); // offload the logic to user model
     if (isPasswordValid) {
       // Create a JWT token and send it in the response
       const token = await user.getJWT();
       // add cookie
       res.cookie("token", token, {
-        expires: new Date(Date.now() + 8*3600000),// 1 day
+        expires: new Date(Date.now() + 8 * 3600000), // 1 day
         // secure: true, // work with https only
         // httpOnly: true, // work with http only
       });
