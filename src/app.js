@@ -25,11 +25,7 @@ app.post("/login", async (req, res) => {
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (isPasswordValid) {
       // Create a JWT token and send it in the response
-      const token = jwt.sign(
-        { _id: user.id, emailId: user.emailId },
-        "DevTinder@Hash256",
-        { expiresIn: "1d" }
-      );
+      const token = await user.getJWT();
       // add cookie
       res.cookie("token", token, {
         expires: new Date(Date.now() + 8*3600000),// 1 day

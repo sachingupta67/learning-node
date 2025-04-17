@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 const validator = require("validator");
+const jwt = require("jsonwebtoken");
 
 const userSchema = new Schema(
   {
@@ -29,11 +30,11 @@ const userSchema = new Schema(
     password: {
       type: String,
       required: true,
-      validate:(value)=>{
-        if(!validator.isStrongPassword(value)){
+      validate: (value) => {
+        if (!validator.isStrongPassword(value)) {
           throw new Error("Password is not strong enough");
         }
-      }
+      },
     },
     age: {
       type: Number,
@@ -51,8 +52,8 @@ const userSchema = new Schema(
     },
     photoUrl: {
       type: String,
-      validate:(value)=>{
-        if(!validator.isURL(value)){
+      validate: (value) => {
+        if (!validator.isURL(value)) {
           throw new Error("Invalid URL");
         }
       },
@@ -70,5 +71,14 @@ const userSchema = new Schema(
   { timestamps: true }
 );
 
+userSchema.methods.getJWT =async function () {
+  const user = this;
+  const token = await jwt.sign(
+    { _id: user.id, emailId: user.emailId },
+    "DevTinder@Hash256",
+    { expiresIn: "1d" }
+  );
+  return token;
+};
 const User = mongoose.model("User", userSchema);
 module.exports = User;
