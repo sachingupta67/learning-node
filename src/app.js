@@ -27,10 +27,15 @@ app.post("/login", async (req, res) => {
       // Create a JWT token and send it in the response
       const token = jwt.sign(
         { _id: user.id, emailId: user.emailId },
-        "DevTinder@Hash256"
+        "DevTinder@Hash256",
+        { expiresIn: "1d" }
       );
       // add cookie
-      res.cookie("token", token);
+      res.cookie("token", token, {
+        expires: new Date(Date.now() + 8*3600000),// 1 day
+        // secure: true, // work with https only
+        // httpOnly: true, // work with http only
+      });
       res.send({ message: "Login Successful", data: user });
     } else {
       throw new Error("Credentials are not valid");
@@ -70,6 +75,9 @@ app.get("/profile", userAuthMiddleware, async (req, res) => {
   }
 });
 
+app.post("/send-connection-request", userAuthMiddleware, (req, res) => {
+  res.send({ message: "Connection Request Sent", data: { from: req.user } });
+});
 
 app.use("/", (err, req, res, next) => {
   res.status(500).send({ message: err.message });
