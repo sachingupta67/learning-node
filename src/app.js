@@ -14,7 +14,6 @@ app.post("/signup", async (req, res) => {
     res.send({ message: "User Created" });
   } catch (err) {
     res.status(500).send(err);
-
   }
 });
 
@@ -46,14 +45,35 @@ app.delete("/user", async (req, res) => {
 });
 
 // update user by uuid
-app.patch("/user", async (req, res) => {
+app.patch("/user/:userId", async (req, res) => {
   const data = req.body;
+  const _id = req.params.userId;
   try {
-    const userData = await User.findByIdAndUpdate(
-      data._id,
-      { ...data },
-      { returnDocument: "after",runValidators:true }
+    const ALLOWED_FIELDS = [
+      "firstName",
+      "lastName",
+      "password",
+      "age",
+      "photoUrl",
+      "about",
+      "skills",
+      "gender",
+    ]; // we can avoid to update emailId or un-necessary fields
+    const isAllowed = Object.keys(data).every((field) =>
+      ALLOWED_FIELDS.includes(field)
     );
+    if (!isAllowed) {
+      return res.status(400).send({ message: "Some of fields not allowed" });
+    }
+    if (data.skills.length > 5) {
+     throw new Error("Skills cannot be more than 5");
+    }
+    const userData = await User.findByIdAndUpdate(
+      _id,
+      { ...data },
+      { returnDocument: "after", runValidators: true }
+    );
+
     if (!userData) {
       return res.status(404).send({ message: "User not found" });
     }
