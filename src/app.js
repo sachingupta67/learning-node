@@ -4,8 +4,11 @@ const bcrypt = require("bcrypt");
 const { connectDB } = require("../src/config/database");
 const User = require("./models/user");
 const { validateSignupData } = require("./utils/validation");
+const cookieParser = require("cookie-parser");
 const app = express();
+const jwt = require("jsonwebtoken");
 app.use(express.json());
+app.use(cookieParser());
 app.post("/login", async (req, res) => {
   try {
     const { emailId, password } = req.body;
@@ -20,6 +23,13 @@ app.post("/login", async (req, res) => {
     }
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (isPasswordValid) {
+      // Create a JWT token and send it in the response
+      const token = jwt.sign(
+        { _id: user.id, emailId: user.emailId },
+        "DevTinder@Hash256"
+      );
+      // add cookie
+      res.cookie("token", token);
       res.send({ message: "Login Successful", data: user });
     } else {
       throw new Error("Credentials are not valid");
@@ -46,6 +56,29 @@ app.post("/signup", async (req, res) => {
     const user = new User(userObject); // creating a new instance of user model for this data
     const info = await user.save();
     res.send({ message: "User Created", data: info });
+  } catch (err) {
+    res.status(500).send({ message: err.message });
+  }
+});
+
+app.get("/profile", async (req, res) => {
+  try {
+    const cookies = req.cookies;
+    const { token } = cookies;
+    if(!token){
+     return res.status(401).send({ message: "Unauthorized" });
+    }
+    const decodedValue = jwt.verify(token, "DevTinder@Hash256");
+    if (decodedValue) {
+      const {_id} = decodedValue;
+      const user = await User.findById(_id);
+      if (!user) {
+        throw new Error("User not found");
+      }
+      res.send({ message: "Profile Data", data: user ,token});
+    } else {
+      throw new Error("Token is not valid");
+    }
   } catch (err) {
     res.status(500).send({ message: err.message });
   }
