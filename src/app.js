@@ -1,19 +1,53 @@
 const express = require("express");
+const validator = require("validator");
+const bcrypt = require("bcrypt");
 const { connectDB } = require("../src/config/database");
 const User = require("./models/user");
+const { validateSignupData } = require("./utils/validation");
 const app = express();
 app.use(express.json());
-
-app.post("/signup", async (req, res) => {
-  const userObject = {
-    ...req.body,
-  };
-  const user = new User(userObject); // creating a new instance of user model for this data
+app.post("/login", async (req, res) => {
   try {
-    await user.save();
-    res.send({ message: "User Created" });
+    const { emailId, password } = req.body;
+    if (!emailId || !password) {
+      throw new Error("EmailId and Password are required");
+    } else if (!validator.isEmail(emailId)) {
+      throw new Error("Invalid EmailId");
+    }
+    const user = await User.findOne({ emailId: emailId });
+    if (!user) {
+      throw new Error("Credentials are not valid");
+    }
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (isPasswordValid) {
+      res.send({ message: "Login Successful", data: user });
+    } else {
+      throw new Error("Credentials are not valid");
+    }
   } catch (err) {
-    res.status(500).send(err);
+    res.status(500).send({ message: err.message });
+  }
+});
+app.post("/signup", async (req, res) => {
+  try {
+    // 1. Never trust req.body , do validation before saving it in DB
+    validateSignupData(req);
+    const { firstName, lastName, emailId, password, gender, age } = req.body;
+    //  2. encrypt the password before saving it in DB
+    const passwordHash = await bcrypt.hash(password, 10);
+    const userObject = {
+      firstName,
+      lastName,
+      emailId,
+      password: passwordHash,
+      gender,
+      age,
+    };
+    const user = new User(userObject); // creating a new instance of user model for this data
+    const info = await user.save();
+    res.send({ message: "User Created", data: info });
+  } catch (err) {
+    res.status(500).send({ message: err.message });
   }
 });
 
@@ -66,7 +100,7 @@ app.patch("/user/:userId", async (req, res) => {
       return res.status(400).send({ message: "Some of fields not allowed" });
     }
     if (data.skills.length > 5) {
-     throw new Error("Skills cannot be more than 5");
+      throw new Error("Skills cannot be more than 5");
     }
     const userData = await User.findByIdAndUpdate(
       _id,
