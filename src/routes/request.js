@@ -46,16 +46,6 @@ requestRouter.post(
         throw new Error("User not found");
       }
 
-      // toUserId and fromUserId should not be same person | means we can not send request to our self
-      console.log("check:::",{
-        fromUserId,
-        toUserId,
-        x:fromUserId === toUserId,
-      })
-      // if (fromUserId === toUserId) {
-      //   throw new Error("You can not send request to yourself");
-      // }
-
       // save the request | now we have to create a new instance of request model and save it
       const connectedRequest = new ConnectionRequestModel({
         fromUserId,
@@ -65,8 +55,49 @@ requestRouter.post(
 
       const requestInfo = await connectedRequest.save();
       res.json({
-        message:'success',
+        message: "success",
         data: requestInfo,
+      });
+    } catch (err) {
+      res.status(404).send({ message: err.message });
+    }
+  }
+);
+
+requestRouter.post(
+  "/request/review/:status/:requestId",
+  userAuthMiddleware,
+  async (req, res) => {
+    try {
+      const requestId = req.params.requestId;
+      const status = req.params.status;
+      const loggedInUser = req.user;
+      // const fromUserId = fromUser._id;
+
+      // validate status
+      const allowedStatus = ["accepted", "rejected"];
+      if (!allowedStatus.includes(status)) {
+        throw new Error(`Invalid status: ${status}`);
+      }
+
+      // check connection status , it should be 'interested' which has to review for me | for me how many request i have got thats why to userId
+
+      const connectionRequest = await ConnectionRequestModel.findOne({
+        _id: requestId,
+        toUserId: loggedInUser._id,
+        status: "interested",
+      });
+
+      if (!connectionRequest) {
+        throw new Error("You don't have any interested connection request");
+      }
+
+      connectionRequest.status = status;
+      const updatedConnectionRequest = await connectionRequest.save();
+
+      res.json({
+        message: `Connection request ${status}`,
+        data: updatedConnectionRequest,
       });
     } catch (err) {
       res.status(404).send({ message: err.message });
