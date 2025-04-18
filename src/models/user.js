@@ -19,6 +19,7 @@ const userSchema = new Schema(
       type: String,
       required: true,
       unique: true,
+      index: true,
       lowerCase: true,
       // match: [/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i, "Invalid email format"],
       validate: (value) => {
@@ -71,6 +72,8 @@ const userSchema = new Schema(
   },
   { timestamps: true }
 );
+
+userSchema.index({ firstName: 1, lastName: 1 }); // compound index
 
 userSchema.methods.getJWT = async function () {
   const user = this;

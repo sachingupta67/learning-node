@@ -31,6 +31,10 @@ connectionRequestSchema.pre("save", function (next) {
   }
   next()
 });
+
+connectionRequestSchema.index({ fromUserId: 1, toUserId: 1 }) // Compound Indexing
+// 1 means ascending order, -1 means descending order
+// unique: true means we can't have same fromUserId and toUserId combination
 const ConnectRequestModel = new mongoose.model(
   "ConnectionRequest",
   connectionRequestSchema

@@ -13,3 +13,26 @@
 - payload: data (secret data will hide in token)
 - signature: secret key + header + payload
 - will use jsonwebtoken package for that.
+
+# when your DB grow , then query will slow down.
+- Solution : one of popular solution we can do is indexing on certain fields.
+- example 
+    - search query - means find , lets say we have 1 million user records ,we have many person with same name, so we can 
+                     create index on name field.
+- in mongo , if we have 'unique:true' in schema, then it will create index on that field automatically.
+- in mongo, if we have 'index:true' in schema, then it will create index on that field automatically.
+
+
+# Compound Index
+- example : ConnectionRequest.find({senderId:req.user._id, receiverId:req.params.userId}) 
+- for making this fast we need to apply index on both fields otherwise it will be slow 
+```
+connectionRequestSchema.index({ fromUserId: 1, toUserId: 1 });
+// 1 means ascending order, -1 means descending order
+// unique: true means we can't have same fromUserId and toUserId combination
+
+```
+
+# If Index make fast , then why we should not to use in every fields
+- because index will take more space in DB.
+- if we have 1 million records, then index will take 1 million records space in DB.
