@@ -2,7 +2,15 @@ const express = require("express");
 const { userAuthMiddleware } = require("../middlewares/auth");
 const ConnectRequestModel = require("../models/connectionRequest");
 const userRouter = express.Router();
-
+const SAFE_POPULATE_DATA = [
+  "firstName",
+  "lastName",
+  "age",
+  "gender",
+  "photoUrl",
+  "about",
+  "skills",
+];
 // Purpose : Get All pending connection request for logged User
 userRouter.get(
   "/user/requests/received",
@@ -17,13 +25,7 @@ userRouter.get(
       const pendingConnectionRequests = await ConnectRequestModel.find({
         toUserId: loggedInUser._id,
         status: "interested",
-      }).populate("fromUserId", [
-        "firstName",
-        "lastName",
-        "photoUrl",
-        "skills",
-        "about",
-      ]); // Note : if not pass array it will give all details but we have to avoid over-fetching
+      }).populate("fromUserId", SAFE_POPULATE_DATA); // Note : if not pass array it will give all details but we have to avoid over-fetching
       if (!pendingConnectionRequests) {
         return res
           .status(404)
@@ -47,17 +49,16 @@ userRouter.get("/user/connections", userAuthMiddleware, async (req, res) => {
         { toUserId: loggedInUser._id, status: "accepted" },
         { fromUserId: loggedInUser._id, status: "accepted" },
       ],
-    }).populate("fromUserId", [
-      "firstName",
-      "lastName",
-      "age",
-      "gender",
-      "photoUrl",
-      "about",
-      "skills",
-    ]);
+    }).populate("fromUserId", SAFE_POPULATE_DATA).populate("toUserId", SAFE_POPULATE_DATA);
+    
     res.status(200).json({
-      data: getListOfConnectedPersons.map(item=>item.fromUserId),
+      data:  getListOfConnectedPersons.map((item) => {
+        if(item.fromUserId.equals(loggedInUser._id)){
+          return item.toUserId
+        }
+        return item.fromUserId
+      }),
+      // data:getListOfConnectedPersons,
       message: "success",
     });
   } catch (err) {
