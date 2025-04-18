@@ -1,6 +1,7 @@
 const express = require("express");
 const { userAuthMiddleware } = require("../middlewares/auth");
 const ConnectRequestModel = require("../models/connectionRequest");
+const User = require("../models/user");
 const userRouter = express.Router();
 const SAFE_POPULATE_DATA = [
   "firstName",
@@ -49,20 +50,63 @@ userRouter.get("/user/connections", userAuthMiddleware, async (req, res) => {
         { toUserId: loggedInUser._id, status: "accepted" },
         { fromUserId: loggedInUser._id, status: "accepted" },
       ],
-    }).populate("fromUserId", SAFE_POPULATE_DATA).populate("toUserId", SAFE_POPULATE_DATA);
-    
+    })
+      .populate("fromUserId", SAFE_POPULATE_DATA)
+      .populate("toUserId", SAFE_POPULATE_DATA);
+
     res.status(200).json({
-      data:  getListOfConnectedPersons.map((item) => {
-        if(item.fromUserId.equals(loggedInUser._id)){
-          return item.toUserId
+      data: getListOfConnectedPersons.map((item) => {
+        if (item.fromUserId.equals(loggedInUser._id)) {
+          return item.toUserId;
         }
-        return item.fromUserId
+        return item.fromUserId;
       }),
       // data:getListOfConnectedPersons,
       message: "success",
     });
   } catch (err) {
     res.status(400).json({ message: err.message });
+  }
+});
+
+userRouter.get("/feed", userAuthMiddleware, async (req, res) => {
+  try {
+    // Show All user cards with some certain cards
+    // - not seen own card
+    // - his connection
+    // - ignored , rejected , interested (all ready send)
+    const loggedInUser = req.user;
+    const connectionRequest = await ConnectRequestModel.find({
+      $or: [
+        {
+          toUserId: loggedInUser._id,
+        },
+        { fromUserId: loggedInUser._id },
+      ],
+    }).select(["fromUserId", "toUserId", "status"]); // we dont want into feed
+
+    const hideUsersFromFeed = new Set(); // it has including me , with other (Accepted | Rejected | Ignored) - we can hide all these
+    connectionRequest?.forEach((cnr) => {
+      hideUsersFromFeed.add(cnr.toUserId.toString());
+      hideUsersFromFeed.add(cnr.fromUserId.toString());
+    });
+
+    const getUsers = await User.find({
+      $and: [
+        { _id: { $nin: Array.from(hideUsersFromFeed) } },
+        { _id: { $ne: loggedInUser._id } },
+      ],
+    }).select(SAFE_POPULATE_DATA);
+
+    res
+      .status(200)
+      .json({
+        total_records: getUsers.length,
+        message: "success",
+        data: getUsers,
+      });
+  } catch (err) {
+    res.status(400).send({ message: err.message });
   }
 });
 module.exports = userRouter;
