@@ -40,3 +40,8 @@ connectionRequestSchema.index({ fromUserId: 1, toUserId: 1 });
 # Let's say we have connectionRequestObject , where we have ids only in array now we want data of those Id
 - Approach 1 => Loop through ids and run the query get the data and update it with response (POOR WAY)
 - Better Approach => Building Relation b/w two tables
+
+# Pagination (will use skip() & limit())
+- /feed?page=1&limit=10 => 1-10  => skip(0) limit(10)
+- /feed?page=2&limit=20 => 11-20 => skip(1) limit (10)
+- /feed?page=3&limit=30 => 21-30 => skip(2) limit (10)

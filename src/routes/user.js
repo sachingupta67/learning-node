@@ -75,7 +75,17 @@ userRouter.get("/feed", userAuthMiddleware, async (req, res) => {
     // - not seen own card
     // - his connection
     // - ignored , rejected , interested (all ready send)
+
     const loggedInUser = req.user;
+    const { page = 1, limit = 10 } = req.query || {};
+    const currentPage = Number(page);
+    let currentLimit = Number(limit);
+    if (currentLimit > 100) {
+      currentLimit = 100;
+    }
+
+    const skipCount = (currentPage-1) * Number(currentLimit);
+
     const connectionRequest = await ConnectRequestModel.find({
       $or: [
         {
@@ -96,15 +106,16 @@ userRouter.get("/feed", userAuthMiddleware, async (req, res) => {
         { _id: { $nin: Array.from(hideUsersFromFeed) } },
         { _id: { $ne: loggedInUser._id } },
       ],
-    }).select(SAFE_POPULATE_DATA);
+    })
+      .select(SAFE_POPULATE_DATA)
+      .skip(skipCount)
+      .limit(Number(currentLimit));
 
-    res
-      .status(200)
-      .json({
-        total_records: getUsers.length,
-        message: "success",
-        data: getUsers,
-      });
+    res.status(200).json({
+      message: "success",
+      count: getUsers.length,
+      data: getUsers,
+    });
   } catch (err) {
     res.status(400).send({ message: err.message });
   }
