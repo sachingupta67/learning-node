@@ -22,7 +22,7 @@ userRouter.get(
         "lastName",
         "photoUrl",
         "skills",
-        "about"
+        "about",
       ]); // Note : if not pass array it will give all details but we have to avoid over-fetching
       if (!pendingConnectionRequests) {
         return res
@@ -37,4 +37,31 @@ userRouter.get(
     }
   }
 );
+
+// fetch the list of user who are connected with me
+userRouter.get("/user/connections", userAuthMiddleware, async (req, res) => {
+  try {
+    const loggedInUser = req.user;
+    const getListOfConnectedPersons = await ConnectRequestModel.find({
+      $or: [
+        { toUserId: loggedInUser._id, status: "accepted" },
+        { fromUserId: loggedInUser._id, status: "accepted" },
+      ],
+    }).populate("fromUserId", [
+      "firstName",
+      "lastName",
+      "age",
+      "gender",
+      "photoUrl",
+      "about",
+      "skills",
+    ]);
+    res.status(200).json({
+      data: getListOfConnectedPersons.map(item=>item.fromUserId),
+      message: "success",
+    });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
 module.exports = userRouter;
