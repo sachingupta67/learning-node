@@ -36,3 +36,7 @@ connectionRequestSchema.index({ fromUserId: 1, toUserId: 1 });
 # If Index make fast , then why we should not to use in every fields
 - because index will take more space in DB.
 - if we have 1 million records, then index will take 1 million records space in DB.
+
+# Let's say we have connectionRequestObject , where we have ids only in array now we want data of those Id
+- Approach 1 => Loop through ids and run the query get the data and update it with response (POOR WAY)
+- Better Approach => Building Relation b/w two tables

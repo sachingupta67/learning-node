@@ -15,6 +15,7 @@ connectionRequestRouter
 - POST - /request/review/accepted/:requestedId
 - POST - /request/review/rejected/:requestedId
 
+# useRouter
 - Get - /user/connections
 - GET - /user/feed  in chunks of 20
 

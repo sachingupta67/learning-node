@@ -1,0 +1,30 @@
+const express = require("express");
+const { userAuthMiddleware } = require("../middlewares/auth");
+const ConnectRequestModel = require("../models/connectionRequest");
+const userRouter = express.Router();
+
+// Purpose : Get All pending connection request for logged User
+userRouter.get("/user/requests", userAuthMiddleware, async (req, res) => {
+  try {
+    // it should be logged in - userAuthMiddleware
+    const loggedInUser = req.user;
+    if (!loggedInUser._id) {
+      return res.status(400).json({ message: "Not a valid user" });
+    }
+    const pendingConnectionRequests = await ConnectRequestModel.find({
+      toUserId: loggedInUser._id,
+      status: "interested",
+    });
+    if (!pendingConnectionRequests) {
+      return res
+        .status(404)
+        .json({ message: "There is no pending request", data: [] });
+    }
+    return res
+      .status(200)
+      .json({ data: pendingConnectionRequests, message: "success" });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+});
+module.exports = userRouter;
