@@ -49,7 +49,7 @@ authRouter.post("/login", async (req, res) => {
         expires: new Date(Date.now() + 8 * 3600000), // 1 day
         // secure: true, // work with https only
         // httpOnly: true, // work with http only
-        sameSite: "none",
+        // sameSite: "none",
       });
       res.send({ message: "Login Successful", data: user });
     } else {
