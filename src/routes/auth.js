@@ -51,7 +51,7 @@ authRouter.post("/login", async (req, res) => {
         // httpOnly: true, // work with http only
         // sameSite: "none",
       });
-      res.send({ message: "Login Successful", data: user });
+      res.send({ message: "Login Successful-0", data: user });
     } else {
       throw new Error("Credentials are not valid");
     }
