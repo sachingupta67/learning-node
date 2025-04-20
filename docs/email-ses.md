@@ -41,8 +41,8 @@ Prerequisites:
 => Testing 
    => use sandbox
 
-=> development 
-   : we need ses sdk 
+=> development  (Pre-req)
+   : we need ses sdk (will do this later)
    : need secret key for the user that we created
       - go to IAM
       - go to user
@@ -55,6 +55,17 @@ Prerequisites:
          AWS_ACCESS_KEY : AWS_SECRET_KEY
          
          ```
-         
+=> Lets' Do Code
+   => https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/getting-started-nodejs.html
+   => https://github.com/awsdocs/aws-doc-sdk-examples/tree/main/javascriptv3/example_code/ses#code-examples
 
+   - need to install this
+     ```
+     @aws-sdk/client-ses
+     ```
+   - follow the code from github for 'send-email in ses'
+   => Note : sender & receiver should be verified in SES (Sandbox)
+      eg [trowio.com] // any email id with this domain
+        [sachingupta.coder@gmail.com] // your personal email to verify
+      how can make anyone render & receiveer
 
