@@ -4,12 +4,14 @@ const app = express();
 const cors = require("cors");
 const { connectDB } = require("../src/config/database");
 const cookieParser = require("cookie-parser");
+// require("./utils/cron-jobs/email-cron"); | Cron JOB Code - Uncomment when you want to run this
 
 const authRouter = require("./routes/auth");
 const profileRouter = require("./routes/profile");
 const requestRouter = require("./routes/request");
 const userRouter = require("./routes/user");
- require("./utils/ses/send-email");
+
+
 
 
 app.use(
