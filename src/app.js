@@ -33,8 +33,8 @@ app.use("/", (err, req, res, next) => {
 connectDB()
   .then(() => {
     console.log("res::: DB Success");
-    app.listen(8080, () => {
-      console.log("Server Running at Port : 8080......");
+    app.listen(process.env.PORT, () => {
+      console.log(`Server Running at Port : ${process.env.PORT}......`);
     });
   })
   .catch((err) => {

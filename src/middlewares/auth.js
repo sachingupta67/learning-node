@@ -21,17 +21,17 @@ const userAuthMiddleware = async (req, res, next) => {
     if (!token) {
       throw new Error("Unauthorized");
     }
-    const decodedObj = jwt.verify(token, "DevTinder@Hash256");
+    const decodedObj = jwt.verify(token, process.env.JWT_SECRET);
     const { _id } = decodedObj;
     const user = await User.findById(_id);
     if (!user) {
       throw new Error("User not found");
     }
-    req.user= user; // add user to the request object
+    req.user = user; // add user to the request object
     next();
   } catch (err) {
     res.status(401).send({ message: err.message });
   }
 };
 
-module.exports = { adminAuthMiddleware,userAuthMiddleware };
+module.exports = { adminAuthMiddleware, userAuthMiddleware };

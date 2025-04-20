@@ -79,7 +79,7 @@ userSchema.methods.getJWT = async function () {
   const user = this;
   const token = await jwt.sign(
     { _id: user.id, emailId: user.emailId },
-    "DevTinder@Hash256",
+    process.env.JWT_SECRET,
     { expiresIn: "1d" }
   );
   return token;
